@@ -5,9 +5,12 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
+#if NET6_0
+    using Int128 = System.Int64;
+#endif
+
 namespace RP.Infra.TypeConverters
 {
-#if !NET6_0
     public static class GuidInt128Converter
     {
         public static Int128 GuidToInt128(Guid guid)
@@ -25,5 +28,4 @@ namespace RP.Infra.TypeConverters
             return new Guid(int128Bytes);
         }
     }
-#endif
 }
