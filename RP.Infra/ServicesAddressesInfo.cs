@@ -13,6 +13,12 @@ namespace RP.Infra
         ServiceInfo? GetService(string serviceName);
     }
 
+    /// <summary>
+    /// Knows how to collect all services info that injected as enviroment varbiales with the next template
+    /// Template: key->"Service:ServiceName:Ip" example value->"127.0.0.1"
+    /// Template: key->"Service:ServiceName:RestApiPort" example value->"5043"
+    /// Template: key->""Service:ServiceName:SupportProberMonitor" example value->"true"
+    /// </summary>
     public class ServicesInfo : IServicesInfo
     {
         private readonly Dictionary<string, ServiceInfo> _services;
@@ -56,6 +62,10 @@ namespace RP.Infra
                     }
                 }
             }
+
+            var keysToRemove = _services.Where(kv => string.IsNullOrEmpty(kv.Value.Ip) || string.IsNullOrEmpty(kv.Value.RestApiPort)).Select(kv => kv.Key).ToList();
+            foreach (var key in keysToRemove)
+                _services.Remove(key);
         }
 
         public IReadOnlyDictionary<string, ServiceInfo> GetAll() => _services;
@@ -65,53 +75,6 @@ namespace RP.Infra
     }
 
 
-    /// <summary>
-    /// Knows how to collect all services info that injected as enviroment varbiales with the next template
-    /// Template: key->"Service:ServiceName:Ip" example value->"127.0.0.1"
-    /// Template: key->"Service:ServiceName:RestApiPort" example value->"5043"
-    /// Template: key->""Service:ServiceName:SupportProberMonitor" example value->"true"
-    /// </summary>
-    /*public class ServicesInfo
-    {
-        public static ServicesInfo Singleton { get; private set; } = new ServicesInfo();
-
-        public Dictionary<string, ServiceInfo> Services = new Dictionary<string, ServiceInfo>();
-
-        private ServicesInfo()
-        {
-            var envVars = Environment.GetEnvironmentVariables();
-
-            foreach (DictionaryEntry envVar in envVars)
-            {
-                var key = (string)envVar.Key;
-                var value = (string?)envVar.Value;
-
-                if (key.StartsWith("Services:"))
-                {
-                    var splitKey = key.Split(":");
-                    var serviceUniqueName = splitKey[1];
-                    var serviceInfoType = splitKey[2];
-
-                    if (!Services.ContainsKey(serviceUniqueName))
-                        Services.Add(serviceUniqueName, new ServiceInfo());
-
-                    switch (serviceInfoType)
-                    {
-                        case "Ip":
-                            Services[serviceUniqueName].Ip = string.IsNullOrEmpty(value) ? string.Empty : value;
-                            break;
-                        case "RestApiPort":
-                            Services[serviceUniqueName].RestApiPort = string.IsNullOrEmpty(value) ? string.Empty : value;
-                            break;
-                        case "SupportProberMonitor":
-                            Services[serviceUniqueName].SupportPublisherCacheMonitors = string.IsNullOrEmpty(value) ? false : bool.Parse(value);
-                            break;
-                    }
-                }
-            }
-        }
-    }
-    */
     public class ServiceInfo
     {
         public string UniqueName { get; set; }
